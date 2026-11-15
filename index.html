@@ -1,0 +1,89 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex,nofollow">
+<meta name="color-scheme" content="light dark">
+<title>Статус сервиса</title>
+<style>
+:root{--bg:#f4f5f7;--card:#fff;--fg:#0f172a;--muted:#64748b;--accent:#4f46e5;--line:#e2e8f0;
+  --ok:#059669;--warn:#d97706;--down:#dc2626}
+@media(prefers-color-scheme:dark){:root{--bg:#0b1020;--card:#131a2c;--fg:#e6eaf2;--muted:#93a0b8;--accent:#7c83ff;--line:#243049;
+  --ok:#34d399;--warn:#fbbf24;--down:#f87171}}
+*{box-sizing:border-box}
+body{margin:0;min-height:100vh;background:var(--bg);color:var(--fg);
+  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+  display:flex;align-items:flex-start;justify-content:center;padding:28px 16px}
+.wrap{width:100%;max-width:440px}
+h1{font-size:15px;font-weight:600;color:var(--muted);margin:0 0 12px;letter-spacing:.2px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:20px;padding:22px;
+  box-shadow:0 16px 40px -22px rgba(0,0,0,.35)}
+.status{border-left:5px solid var(--st);padding-left:16px}
+.badge{display:inline-flex;align-items:center;gap:8px;font-size:13px;font-weight:700;color:var(--st);
+  text-transform:uppercase;letter-spacing:.4px}
+.dot{width:10px;height:10px;border-radius:50%;background:var(--st);box-shadow:0 0 0 4px color-mix(in srgb,var(--st) 22%,transparent)}
+.title{font-size:22px;font-weight:750;margin:10px 0 6px;letter-spacing:-.3px;line-height:1.25}
+.text{font-size:15.5px;line-height:1.55;margin:0;white-space:pre-line}
+.upd{font-size:12.5px;color:var(--muted);margin-top:14px}
+h2{font-size:16px;margin:0 0 4px}
+ol{margin:10px 0 0;padding-left:20px}
+li{font-size:15px;line-height:1.5;padding:5px 0}
+.gap{height:14px}
+.btn{display:block;text-align:center;text-decoration:none;font-weight:650;font-size:15.5px;color:#fff;
+  background:linear-gradient(135deg,var(--accent),#6d28d9);padding:14px;border-radius:14px;margin-top:14px}
+.hidden{display:none}
+.foot{text-align:center;color:var(--muted);font-size:12px;margin-top:16px}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>Статус сервиса</h1>
+
+  <div class="card status" id="st" style="--st:var(--muted)">
+    <div class="badge"><span class="dot"></span><span id="badge">Загрузка…</span></div>
+    <div class="title" id="title">Проверяем статус</div>
+    <p class="text" id="text">Если страница не обновилась, воспользуйтесь инструкцией ниже.</p>
+    <div class="upd" id="upd"></div>
+  </div>
+
+  <div class="gap"></div>
+
+  <div class="card">
+    <h2>Не подключается? По порядку:</h2>
+    <ol>
+      <li>Откройте <b>Happ</b> и нажмите <b>«Обновить подписку»</b>.</li>
+      <li>Выключите и включите VPN в приложении.</li>
+      <li>Переключитесь между Wi-Fi и мобильным интернетом.</li>
+      <li>Не помогло — значит, ведутся работы. Загляните сюда позже.</li>
+    </ol>
+    <a class="btn hidden" id="channel" href="#" target="_blank" rel="noopener">Канал с новостями</a>
+  </div>
+
+  <div class="foot">Сохраните эту страницу в закладки</div>
+</div>
+
+<script>
+var LABELS = {ok:"Работает", warn:"Возможны перебои", down:"Не работает"};
+fetch("status.json?t=" + Date.now(), {cache: "no-store"})
+  .then(function (r) { return r.json(); })
+  .then(function (s) {
+    var state = LABELS[s.state] ? s.state : "warn";
+    document.getElementById("st").style.setProperty("--st", "var(--" + state + ")");
+    document.getElementById("badge").textContent = LABELS[state];
+    document.getElementById("title").textContent = s.title || LABELS[state];
+    document.getElementById("text").textContent = s.text || "";
+    document.getElementById("upd").textContent = s.updated ? "Обновлено: " + s.updated : "";
+    if (s.channel) {
+      var a = document.getElementById("channel");
+      a.href = s.channel;
+      a.classList.remove("hidden");
+    }
+  })
+  .catch(function () {
+    document.getElementById("badge").textContent = "Нет данных";
+    document.getElementById("title").textContent = "Не удалось загрузить статус";
+  });
+</script>
+</body>
+</html>
